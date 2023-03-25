@@ -1,0 +1,676 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link href="data:image/gif;base64,R0lGODlhEAAQAJECACGwANIbG////wAAACH5BAEAAAIALAAAAAAQABAAAAIjlI+pq+APHYoUTLvk0Q0bzmxe+FVGEFzUmYYg+YprZpL2jRQAOw==" rel="icon" type="image/gif"/>
+		<title>Snake Game</title>
+		<style type="text/css">
+			body {
+				margin: 0;
+				-webkit-tap-highlight-color: rgba(0,0,0,0);
+				touch-action: manipulation;
+				user-select: none;
+				-webkit-touch-callout: none;
+				-webkit-user-select: none;
+				-khtml-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				outline: none;
+				text-align: center;
+			}
+			.snakeWrapper {
+				display: flex;
+				width: 100%;
+				height: 100%;
+				align-items: center;
+				justify-content: center;
+				flex-direction: column;
+			}
+
+			.score {
+				display: flex;
+				padding-bottom: 1rem;
+				font-size: 200%;
+				font-weight: bold;
+				justify-content: space-between;
+			}
+			.score-current:before {
+				content: "Score: ";
+			}
+			.score-high:before {
+				content: "Top score: ";
+			}
+
+			.snake {
+				display: flex;
+				box-shadow: 0px 0px 30px #ccc;
+			}
+			.snake > div {
+
+			}
+			.snake > div > div {
+				position: relative;
+				width: 40px;
+				height: 40px;
+				/*border-top: 1px solid #CCC;*/
+				/*border-left: 1px solid #CCC;*/
+			}
+			.snake > div:last-child > div {
+				/border-right: 1px solid #CCC;*/
+			}
+			.snake > div > div:last-child {
+				/*border-bottom: 1px solid #CCC;*/
+			}
+			.snake > div > div > div {
+				box-sizing: border-box;
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+			}
+			.snake > div > div > div.cell {
+				border: 1px solid rgba(200, 200, 200, 0.25);
+				z-index: -1;
+			}
+			.snake > div > div > div.cell.border {
+				background-color: #CCC;
+			}
+			.snake > div > div.startHole > div.apple {
+				border-radius: 50%;
+				background-color: black;
+				z-index: 1;
+			}
+			.snake > div > div.apple > div.apple {
+				background-color: red;
+				background: radial-gradient(#F00, #FBB);
+				top: 5%;
+				left: 5%;
+				width: 90%;
+				height: 90%;
+				border-radius: 50%;
+				z-index: 2;
+				background-image: url('data:image/png;base64,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')
+			}
+			.snake > div > div.hasApple > div.apple {
+				background-color: green;
+				top: 5%;
+				left: 5%;
+				width: 90%;
+				height: 90%;
+				border-radius: 50%;
+				z-index: 2;
+			}
+			.snake > div > div.snakeBody > div.body {
+				background-color: green;
+				z-index: 3;
+			}
+			.snake > div > div.snakeBody.right > div.body, .snake > div > div.snakeBody.left > div.body {
+				height: 70%;
+				top: 15%;
+				left: 0%;
+			}
+			.snake > div > div.snakeBody.up > div.body, .snake > div > div.snakeBody.down > div.body {
+				width: 70%;
+				top: 0%;
+				left: 15%;
+			}
+			.snake > div > div.snakeBody.right.tail.head > div.body, .snake > div > div.snakeBody.left.tail.head > div.body {
+				width: 70%;
+			}
+			.snake > div > div.snakeBody.up.tail.head > div.body, .snake > div > div.snakeBody.bottom.tail.head > div.body {
+				height: 70%;
+			}
+
+			.snake > div > div.snakeBody.head > div.body:before, .snake > div > div.snakeBody.head > div.body:after {
+				content: '';
+				background: #FFF;
+				position: absolute;
+				border-radius: 50%;
+			}
+
+			.snake > div > div.snakeBody.head.right > div.body:before, .snake > div > div.snakeBody.head.left > div.body:before, .snake > div > div.snakeBody.head.right > div.body:after,  .snake > div > div.snakeBody.head.left > div.body:after {
+				width: 20%;
+				height: 25%;
+			}
+			.snake > div > div.snakeBody.head.up > div.body:before, .snake > div > div.snakeBody.head.down > div.body:before, .snake > div > div.snakeBody.head.up > div.body:after,  .snake > div > div.snakeBody.head.down > div.body:after {
+				width: 25%;
+				height: 20%;
+			}
+
+			.snake > div > div.snakeBody.right.head > div.body {
+				border-top-right-radius: 25%;
+				border-bottom-right-radius: 25%;
+				width: 85%;
+			}
+			.snake > div > div.snakeBody.right.head > div.body:before {
+				bottom: 20%;
+				left: 60%;
+			}
+			.snake > div > div.snakeBody.right.head > div.body:after {
+				top: 20%;
+				left: 60%;
+			}
+
+			.snake > div > div.snakeBody.left.head > div.body {
+				border-top-left-radius: 25%;
+				border-bottom-left-radius: 25%;
+				width: 85%;
+				left: 15%;
+			}
+			.snake > div > div.snakeBody.left.head > div.body:before {
+				bottom: 20%;
+				right: 60%;
+			}
+			.snake > div > div.snakeBody.left.head > div.body:after {
+				top: 20%;
+				right: 60%;
+			}
+
+			.snake > div > div.snakeBody.up.head > div.body {
+				border-top-right-radius: 25%;
+				border-top-left-radius: 25%;
+				height: 85%;
+				top: 15%;
+			}
+			.snake > div > div.snakeBody.up.head > div.body:before {
+				bottom: 60%;
+				left: 20%;
+			}
+			.snake > div > div.snakeBody.up.head > div.body:after {
+				bottom: 60%;
+				right: 20%;
+			}
+
+			.snake > div > div.snakeBody.down.head > div.body {
+				border-bottom-right-radius: 25%;
+				border-bottom-left-radius: 25%;
+				height: 85%;
+			}
+			.snake > div > div.snakeBody.down.head > div.body:before {
+				top: 60%;
+				left: 20%;
+			}
+			.snake > div > div.snakeBody.down.head > div.body:after {
+				top: 60%;
+				right: 20%;
+			}
+
+			.snake > div > div.snakeBody.head > div.tongue {
+				width: 0%;
+				height: 0%;
+				z-index: 4;
+			}
+			.snake > div > div.snakeBody.head.right > div.tongue {
+				border-top: 4px solid transparent;
+				border-bottom: 4px solid transparent;
+				border-right: 5px solid red;
+				top: 40%;
+				left: 80%;
+			}
+			.snake > div > div.snakeBody.head.left > div.tongue {
+				border-bottom: 4px solid transparent;
+				border-top: 4px solid transparent;
+				border-left: 5px solid red;
+				bottom: 40%;
+				right: 80%;
+			}
+			.snake > div > div.snakeBody.head.up > div.tongue {
+				border-right: 4px solid transparent;
+				border-left: 4px solid transparent;
+				border-top: 5px solid red;
+				left: 40%;
+				bottom: 80%;
+			}
+			.snake > div > div.snakeBody.head.down > div.tongue {
+				border-left: 4px solid transparent;
+				border-right: 4px solid transparent;
+				border-bottom: 5px solid red;
+				right: 40%;
+				top: 80%;
+			}
+
+			.snake > div > div.snakeBody.right.tail > div.body {
+				border-top-left-radius: 50%;
+				border-bottom-left-radius: 50%;
+				width: 85%;
+				left: 15%;
+			}
+			.snake > div > div.snakeBody.left.tail > div.body {
+				border-top-right-radius: 50%;
+				border-bottom-right-radius: 50%;
+				width: 85%;
+			}
+			.snake > div > div.snakeBody.up.tail > div.body {
+				border-bottom-right-radius: 50%;
+				border-bottom-left-radius: 50%;
+				height: 85%;
+			}
+			.snake > div > div.snakeBody.down.tail > div.body {
+				border-top-right-radius: 50%;
+				border-top-left-radius: 50%;
+				height: 85%;
+				top: 15%;
+			}
+
+			.snake > div > div.snakeBody.rightdown > div.body, .snake > div > div.snakeBody.upleft > div.body {
+				width: 85%;
+				height: 85%;
+				top: 15%;
+				border-top-right-radius: 100%;
+				left: 0%;
+			}
+			.snake > div > div.snakeBody.rightdown > div.body:before, .snake > div > div.snakeBody.upleft > div.body:before {
+				content: '';
+				width: calc( 2 * 100% * 0.15 / 0.85 );
+				height: calc( 2 * 100% * 0.15 / 0.85 );
+				background: #FFF;
+				position: absolute;
+				bottom: calc( -100% * 0.15 / 0.85 );
+				left: calc( -100% * 0.15 / 0.85 );
+				border-radius: 100%;
+			}
+			.snake > div > div.snakeBody.downleft > div.body, .snake > div > div.snakeBody.rightup > div.body {
+				width: 85%;
+				height: 85%;
+				border-bottom-right-radius: 100%;
+				top: 0;
+				left: 0;
+			}
+			.snake > div > div.snakeBody.downleft > div.body:before, .snake > div > div.snakeBody.rightup > div.body:before {
+				content: '';
+				width: calc( 2 * 100% * 0.15 / 0.85 );
+				height: calc( 2 * 100% * 0.15 / 0.85 );
+				background: #FFF;
+				position: absolute;
+				top: calc( -100% * 0.15 / 0.85 );
+				left: calc( -100% * 0.15 / 0.85 );
+				border-radius: 100%;
+			}
+			.snake > div > div.snakeBody.downright > div.body, .snake > div > div.snakeBody.leftup > div.body {
+				width: 85%;
+				height: 85%;
+				border-bottom-left-radius: 100%;
+				top: 0;
+				left: 15%;
+			}
+			.snake > div > div.snakeBody.downright > div.body:before, .snake > div > div.snakeBody.leftup > div.body:before {
+				content: '';
+				width: calc( 2 * 100% * 0.15 / 0.85 );
+				height: calc( 2 * 100% * 0.15 / 0.85 );
+				background: #FFF;
+				position: absolute;
+				top: calc( -100% * 0.15 / 0.85 );
+				right: calc( -100% * 0.15 / 0.85 );
+				border-radius: 100%;
+			}
+			.snake > div > div.snakeBody.upright > div.body, .snake > div > div.snakeBody.leftdown > div.body {
+				width: 85%;
+				height: 85%;
+				border-top-left-radius: 100%;
+				top: 15%;
+				left: 15%;
+			}
+			.snake > div > div.snakeBody.upright > div.body:before, .snake > div > div.snakeBody.leftdown > div.body:before {
+				content: '';
+				width: calc( 2 * 100% * 0.15 / 0.85 );
+				height: calc( 2 * 100% * 0.15 / 0.85 );
+				background: #FFF;
+				position: absolute;
+				bottom: calc( -100% * 0.15 / 0.85 );
+				right: calc( -100% * 0.15 / 0.85 );
+				border-radius: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<script type="text/javascript">
+			var gameSnakeInstances = [];
+			class GameSnake {
+				constructor( params ) {
+					if( gameSnakeInstances === undefined ) gameSnakeInstances = new Map();
+					let canvasId = 'gameSnakeInstance_' + ( Object.keys(gameSnakeInstances).length + 1 );
+					this.canvasId = canvasId;
+					gameSnakeInstances[ this.canvasId ] = this;
+
+					this.params = params;
+console.log( this.params )
+					this.cookieName = 'snake_cookie';
+					this.readCookieData();
+					this.init();
+					
+					document.addEventListener( 'keydown', function keyDownAction( event ) { GameSnake.processGameAction( 'keydown', event, canvasId ); }, false );
+					this.timeoutReference = null;
+					this.requestAnimationReference = requestAnimationFrame( function responseAnimationFrame( timestamp ) { GameSnake.processAnimationFrame( canvasId, timestamp ); } );
+
+					return this;
+				}
+
+				init() {
+					this.isSnakeCentered = this.params?.isSnakeCentered ? this.params.isSnakeCentered == true : false;
+					this.drawBorders = this.params?.drawBorders ? this.params.drawBorders == true : false;
+
+					this.speed = ( this.params?.speed && this.params.speed > 0 ) ? this.params.speed : 200;
+					this.fieldWidth = ( this.params?.width && this.params.width > 0 ) ? this.params.width : 20;
+					this.fieldHeight = ( this.params?.height && this.params.height > 0 ) ? this.params.height : 15;
+					this.initialLength = 3;
+					
+					if( this.drawBorders ) {
+						this.fieldWidth +=2;
+						this.fieldHeight +=2;
+					}
+
+					this.scoreCurrent = 0;
+					this.scoreHigh = this.scoreHigh || 0;
+
+					this.field = [];
+					let body = document.querySelector( 'body' );
+					let gameBodyWrapper = document.querySelector( '#' + this.canvasId );
+					if( !gameBodyWrapper ) {
+						gameBodyWrapper = document.createElement( 'div' );
+						gameBodyWrapper.id = this.canvasId;
+						gameBodyWrapper.classList = 'snakeWrapper';
+						body.appendChild( gameBodyWrapper );
+					} else {
+						while( gameBodyWrapper.firstChild ) {
+							gameBodyWrapper.removeChild( gameBodyWrapper.lastChild );
+						}
+					}
+
+					let snakeBody = document.createElement( 'div' );
+					snakeBody.classList = 'snakeBody';
+					gameBodyWrapper.appendChild( snakeBody );
+
+					let gameScore = document.createElement( 'div' );
+					gameScore.classList = 'score';
+					snakeBody.appendChild( gameScore );
+					let gameScoreCurrent = document.createElement( 'div' );
+					gameScoreCurrent.classList = 'score-current';
+					gameScore.appendChild( gameScoreCurrent );
+					let gameScoreHigh = document.createElement( 'div' );
+					gameScoreHigh.classList = 'score-high';
+					gameScore.appendChild( gameScoreHigh );
+
+					let gameBody = document.createElement( 'div' );
+					gameBody.classList = 'snake';
+					snakeBody.appendChild( gameBody );
+					for( let i = 0; i < this.fieldWidth; i++ ) {
+						let rowDiv = document.createElement( 'div' );
+						let row = [];
+						this.field.push( row );
+						for( let j = 0; j < this.fieldHeight; j++ ) {
+							let cell = {
+								x: i,
+								y: j,
+								id: 'x' + i + 'y' + j,
+								border: this.drawBorders && ( i == 0 || j == 0 || i == this.fieldWidth - 1 || j == this.fieldHeight - 1 ) ? true : false
+							}
+							row.push( cell );
+							let cellDiv = document.createElement( 'div' );
+							cellDiv.id = cell.id;
+							rowDiv.appendChild( cellDiv );
+							let cellCellDiv = document.createElement( 'div' );
+							cellCellDiv.classList = 'cell' + ( this.drawBorders && cell.border ? ' border' : '' );
+							cellDiv.appendChild( cellCellDiv );
+							let bodyCellDiv = document.createElement( 'div' );
+							bodyCellDiv.classList = 'body';
+							cellDiv.appendChild( bodyCellDiv );
+							let tongueCellDiv = document.createElement( 'div' );
+							tongueCellDiv.classList = 'tongue';
+							cellDiv.appendChild( tongueCellDiv );
+							let appleCellDiv = document.createElement( 'div' );
+							appleCellDiv.classList = 'apple';
+							cellDiv.appendChild( appleCellDiv );
+						}
+						gameBody.appendChild( rowDiv );
+					}
+					const initialDirection = 'right';
+					this.direction = initialDirection;
+					this.snake = {
+						body: [
+							{
+								x: Math.round( this.fieldWidth/(this.isSnakeCentered ? 2 : 4) - 1 ),
+								y: Math.round( this.fieldHeight/2 - 1 ),
+								direction: initialDirection,
+								hasApple: false
+							}
+						],
+						direction: initialDirection
+					};
+					this.snake.body.forEach( bodyItem => {
+						document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ bodyItem.x ][ bodyItem.y ].id ).classList.add( 'startHole', 'snakeBody', bodyItem.direction );
+						document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ this.snake.body[0].x ][ this.snake.body[0].y ].id ).classList.add( 'tail' );
+						document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ this.snake.body[this.snake.body.length - 1].x ][ this.snake.body[this.snake.body.length - 1].y ].id ).classList.add( 'head' );
+					});
+					this.createApple();
+					this.drawScore();
+					this.drawTimer = performance.now();
+				}
+
+				static processGameAction( action, event, canvasId ) {
+					gameSnakeInstances[ canvasId ].processGameAction( action, event, canvasId );
+				}
+
+				processGameAction( action, event, timestamp ) {
+					let keyCodeMap = {
+						37: 'left',
+						38: 'up',
+						39: 'right',
+						40: 'down',
+						65: 'left',
+						87: 'up',
+						68: 'right',
+						83: 'down',
+						100: 'left',
+						104: 'up',
+						102: 'right',
+						98: 'down'
+					}
+					if( action == 'keydown' ) {
+						if( !( event.keyCode in keyCodeMap ) ) return;
+						const direction = keyCodeMap[ event.keyCode ];
+						if( this.snake.direction == 'left' && direction == 'right' ) return;
+						if( this.snake.direction == 'right' && direction == 'left' ) return;
+						if( this.snake.direction == 'up' && direction == 'down' ) return;
+						if( this.snake.direction == 'down' && direction == 'up' ) return;
+						this.direction = direction;
+						this.processAnimationFrame( this.canvasId, timestamp, true );
+					}
+				}
+
+				static processAnimationFrame( canvasId, timestamp ) {
+					gameSnakeInstances[ canvasId ].processAnimationFrame( canvasId, timestamp, false );
+				}
+
+				processAnimationFrame( canvasId, timestamp, forceProcess ) {
+					clearTimeout( this.timeoutReference );
+					this.play( forceProcess );
+					this.timeoutReference = setTimeout( () => {
+						this.requestAnimationReference = requestAnimationFrame( function responseAnimationFrame( timestamp ) { GameSnake.processAnimationFrame( canvasId, timestamp ); } );
+					}, this.speed); 
+				}
+
+				play( forceProcess ) {
+					if( !this.doPlay( forceProcess ) ) return;
+					this.snake.direction = this.direction;
+					let oldHead = this.snake.body[ this.snake.body.length - 1 ];
+					let newHead = {
+						x: oldHead.x + ( this.snake.direction == 'right' ? 1 : ( this.snake.direction == 'left' ? -1 : 0 ) ),
+						y: oldHead.y + ( this.snake.direction == 'down' ? 1 : ( this.snake.direction == 'up' ? -1 : 0 ) ),
+						direction: this.snake.direction,
+						hasApple: false
+					}
+					if( newHead.x < 0 ) newHead.x = this.fieldWidth - 1;
+					if( newHead.x >= this.fieldWidth ) newHead.x = 0;
+					if( newHead.y < 0 ) newHead.y = this.fieldHeight - 1;
+					if( newHead.y >= this.fieldHeight ) newHead.y = 0;
+					const ateApple = this.apple ? ( this.apple.x == newHead.x && this.apple.y == newHead.y ) : false;
+					if( ateApple ) {
+						newHead.hasApple = true;
+						this.scoreCurrent++;
+						this.drawScore();
+					}
+					if( this.snake.body.length < this.initialLength && ateApple ) {
+						this.initialLength++;
+					}
+					if( this.snake.body.length >= this.initialLength && !ateApple ) {
+						let oldTail = this.snake.body.shift();
+						document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ oldTail.x ][ oldTail.y ].id ).classList.remove( 'startHole', 'snakeBody', 'head', 'tail', 'up', 'down', 'left', 'right', 'upup', 'downdown', 'leftleft', 'rightright', 'upleft', 'upright', 'downleft', 'downright', 'leftup', 'leftdown', 'rightup', 'rightdown', 'hasApple' );
+					}
+					if( this.field[ newHead.x ][ newHead.y ].border != true && !this.snake.body.find( ( bodyItem => bodyItem.x == newHead.x && bodyItem.y == newHead.y ) ) ) {
+						let classList = [ 'snakeBody', 'head' ];
+						if( newHead.hasApple ) classList.push( 'hasApple' );
+						classList.push( newHead.direction );
+						document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ newHead.x ][ newHead.y ].id ).classList.add( ...classList );
+						this.snake.body.push( newHead );
+
+						if( this.snake.body.length > 1 ) {
+							const neck = this.snake.body[ this.snake.body.length - 2 ];
+							document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ neck.x ][ neck.y ].id ).classList.remove( 'head' );
+							document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ neck.x ][ neck.y ].id ).classList.add( '' + neck.direction + newHead.direction );
+						}
+						let tail = this.snake.body[0];
+
+						if( this.snake.body.length > 1 ) {
+							let ass = this.snake.body[1];
+							document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ tail.x ][ tail.y ].id ).classList.remove( 'up', 'down', 'left', 'right', 'upup', 'downdown', 'leftleft', 'rightright', 'upleft', 'upright', 'downleft', 'downright', 'leftup', 'leftdown', 'rightup', 'rightdown' );
+							document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ tail.x ][ tail.y ].id ).classList.add( ass.direction );
+						}
+						document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ tail.x ][ tail.y ].id ).classList.add( 'tail' );
+
+						if( this.isSnakeCentered ) {
+							if( newHead.direction == 'right' ) {
+								let snakeBoard = document.querySelector( '#' + this.canvasId + '.snakeWrapper .snake' );
+								let row = document.querySelector( '#' + this.canvasId + '.snakeWrapper .snake > div' );
+								snakeBoard.removeChild( row );
+								snakeBoard.appendChild( row );
+							}
+							if( newHead.direction == 'left' ) {
+								let snakeBoard = document.querySelector( '#' + this.canvasId + '.snakeWrapper .snake' );
+								let rows = document.querySelectorAll( '#' + this.canvasId + '.snakeWrapper .snake > div' );
+								let row = rows[ rows.length - 1 ];
+								snakeBoard.removeChild( row );
+								snakeBoard.insertBefore( row, snakeBoard.firstChild );
+							}
+							if( newHead.direction == 'down' ) {
+								let snakeBoard = document.querySelector( '#' + this.canvasId + '.snakeWrapper .snake' );
+								snakeBoard.childNodes.forEach( row => {
+									let column = row.childNodes[0];
+									row.removeChild( column );
+									row.appendChild( column );
+								});
+							}
+							if( newHead.direction == 'up' ) {
+								let snakeBoard = document.querySelector( '#' + this.canvasId + '.snakeWrapper .snake' );
+								snakeBoard.childNodes.forEach( row => {
+									let column = row.childNodes[ row.childNodes.length - 1 ];
+									row.removeChild( column );
+									row.insertBefore( column, row.firstChild );
+								});
+							}
+						}
+					} else {
+						this.endGame();
+						return;
+					}
+					if( ateApple ) {
+						this.createApple();
+					}
+				}
+
+				doPlay( forcePlay ) {
+					const now = performance.now();
+					if( forcePlay || !this.drawTimer ) {
+						this.drawTimer = now;
+						return true;
+					}
+					if( now - this.drawTimer < this.speed ) return false;
+					this.drawTimer += this.speed;
+					return true;
+				}
+
+				createApple() {
+					if( this.apple ) {
+						document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ this.apple.x ][ this.apple.y ].id ).classList.remove( 'apple' );
+						this.apple = null;
+					}
+					let field = JSON.parse( JSON.stringify( this.field ) );
+					this.snake.body.forEach( bodyItem => {
+						field[ bodyItem.x ][ bodyItem.y ].available = false;
+					});
+					field = field.reduce( ( allField, fieldRow ) => {
+						allField.push( ...fieldRow.filter( fieldCell => fieldCell.available != false && fieldCell.border != true ) );
+						return allField;
+					}, []);
+					if( field.length == 0 ) {
+						this.endGame();
+						return;
+					}
+					this.apple = field[ Math.floor( Math.random() * field.length ) ];
+					document.querySelector( '#' + this.canvasId + ' ' + '#' + this.field[ this.apple.x ][ this.apple.y ].id ).classList.add( 'apple' );
+				}
+
+				endGame() {
+					if( this.scoreCurrent > this.scoreHigh ) {
+						this.scoreHigh = this.scoreCurrent;
+						this.setCookieData();
+					}
+					this.init();
+				}
+
+				drawScore() {
+					document.querySelector( '#' + this.canvasId + ' ' + '.score-current' ).innerHTML = '' + this.scoreCurrent;
+					document.querySelector( '#' + this.canvasId + ' ' + '.score-high' ).innerHTML = '' + this.scoreHigh;
+				}
+
+				readCookieData() {
+					let cookie = this.getCookie( this.cookieName );
+					if( cookie ) {
+						if( cookie === undefined || cookie == null ) return;
+						let values = JSON.parse( cookie );
+						this.scoreHigh = values?.scoreHigh ? values.scoreHigh : 0;
+					}
+				}
+				
+				setCookieData() {
+					let data = {
+						scoreHigh: this.scoreHigh
+					};
+					this.setCookie( this.cookieName, data, 365 );
+				}
+
+				getCookie( cookieName ) {
+					let nameEQ = cookieName + "=";
+					let ca = document.cookie.split(';');
+					for( let i = 0; i < ca.length; i++ ) {
+						let c = ca[i];
+						while( c.charAt(0) == ' ' ) c = c.substring( 1, c.length );
+						if( c.indexOf( nameEQ ) == 0 ) return c.substring( nameEQ.length, c.length );
+					}
+					return null;
+				}
+
+				setCookie( cookieName, data, days ) {
+					let expires = "";
+					if( !days ) days = 365;
+					if( !cookieName ) cookieName = this.cookieName + '_Default';
+					let date = new Date();
+					date.setTime( date.getTime() + ( days*24*60*60*1000 ) );
+					expires = '; expires=' + date.toUTCString();
+					document.cookie = cookieName + '=' + ( JSON.stringify( data ) || '' )  + expires + '; path=/';
+				}
+			}
+		</script>
+		<script type="text/javascript">
+			window.onload = function() {
+				new GameSnake(
+					{
+						isSnakeCentered: false,
+						drawBorders: false,
+						speed: 200,
+						width: 20,
+						height: 15
+					}
+				);
+			}
+		</script>
+	</body>
+</html>
